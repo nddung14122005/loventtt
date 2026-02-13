@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tỏ Tình</title>
+    <style>
+        body{
+            text-align:center;
+            font-family: Arial;
+            background-color:#ffe6f0;
+            margin-top:120px;
+        }
+        button{
+            padding:12px 25px;
+            font-size:18px;
+            margin:10px;
+            border:none;
+            border-radius:12px;
+            cursor:pointer;
+        }
+        .yes{
+            background-color:#ff4d6d;
+            color:white;
+        }
+        .no{
+            background-color:#999;
+            color:white;
+        }
+        h1{
+            color:#d63384;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="question">Em có yêu anh không? 💕</h1>
+
+    <button class="yes" onclick="showLove()">Có</button>
+    <button class="no" id="noBtn" onclick="changeToYes()">Không</button>
+
+    <script>
+        let changed = false;
+
+        function changeToYes(){
+            let noBtn = document.getElementById("noBtn");
+
+            if(!changed){
+                noBtn.innerText = "Có";
+                noBtn.className = "yes";
+                changed = true;
+            } else {
+                showLove();
+            }
+        }
+
+        function showLove(){
+            document.getElementById("question").innerText = "Anh yêu Em  ❤️";
+            document.querySelectorAll("button").forEach(btn => btn.style.display = "none");
+        }
+    </script>
+
+</body>
+</html>
