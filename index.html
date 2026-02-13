@@ -1,63 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Tỏ Tình</title>
-    <style>
-        body{
-            text-align:center;
-            font-family: Arial;
-            background-color:#ffe6f0;
-            margin-top:120px;
-        }
-        button{
-            padding:12px 25px;
-            font-size:18px;
-            margin:10px;
-            border:none;
-            border-radius:12px;
-            cursor:pointer;
-        }
-        .yes{
-            background-color:#ff4d6d;
-            color:white;
-        }
-        .no{
-            background-color:#999;
-            color:white;
-        }
-        h1{
-            color:#d63384;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Pixel Love</title>
+<style>
+    body{
+        margin:0;
+        background:black;
+        overflow:hidden;
+        cursor:pointer;
+    }
+    canvas{
+        display:block;
+    }
+    .note{
+        position:fixed;
+        bottom:20px;
+        width:100%;
+        text-align:center;
+        color:white;
+        font-size:14px;
+        opacity:0.6;
+        animation: blink 1.5s infinite;
+        font-family:Arial;
+    }
+    @keyframes blink{
+        0%,100%{opacity:0.3;}
+        50%{opacity:1;}
+    }
+</style>
 </head>
 <body>
 
-    <h1 id="question">Em có yêu anh không? 💕</h1>
+<canvas id="canvas"></canvas>
+<div class="note">Ấn vào màn hình</div>
 
-    <button class="yes" onclick="showLove()">Có</button>
-    <button class="no" id="noBtn" onclick="changeToYes()">Không</button>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-    <script>
-        let changed = false;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-        function changeToYes(){
-            let noBtn = document.getElementById("noBtn");
+const PARTICLE_COUNT = 1500;
+let particles = [];
+let state = 0;
 
-            if(!changed){
-                noBtn.innerText = "Có";
-                noBtn.className = "yes";
-                changed = true;
-            } else {
-                showLove();
+class Particle{
+    constructor(){
+        this.x = Math.random()*canvas.width;
+        this.y = Math.random()*canvas.height;
+        this.tx = this.x;
+        this.ty = this.y;
+        this.size = 2;
+    }
+
+    move(){
+        this.x += (this.tx - this.x) * 0.07;
+        this.y += (this.ty - this.y) * 0.07;
+    }
+
+    draw(){
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x,this.y,this.size,this.size);
+    }
+}
+
+for(let i=0;i<PARTICLE_COUNT;i++){
+    particles.push(new Particle());
+}
+
+function getHeartPoints(){
+    let points=[];
+    for(let t=0;t<Math.PI*2;t+=0.01){
+        let x = 16*Math.pow(Math.sin(t),3);
+        let y = 13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+        points.push({
+            x: canvas.width/2 + x*15,
+            y: canvas.height/2 - y*15
+        });
+    }
+    return points;
+}
+
+function getTextPoints(text){
+    let off = document.createElement("canvas");
+    let offCtx = off.getContext("2d");
+    off.width = canvas.width;
+    off.height = canvas.height;
+
+    offCtx.fillStyle="white";
+    offCtx.font="bold 100px Arial";
+    offCtx.textAlign="center";
+    offCtx.fillText(text, canvas.width/2, canvas.height/2);
+
+    let data = offCtx.getImageData(0,0,canvas.width,canvas.height).data;
+    let points=[];
+
+    for(let y=0;y<canvas.height;y+=6){
+        for(let x=0;x<canvas.width;x+=6){
+            let i=(y*canvas.width+x)*4;
+            if(data[i+3]>128){
+                points.push({x,y});
             }
         }
+    }
+    return points;
+}
 
-        function showLove(){
-            document.getElementById("question").innerText = "Anh yêu Em  ❤️";
-            document.querySelectorAll("button").forEach(btn => btn.style.display = "none");
-        }
-    </script>
+function setTarget(points){
+    for(let i=0;i<particles.length;i++){
+        let p = particles[i];
+        let target = points[i % points.length];
+        p.tx = target.x;
+        p.ty = target.y;
+    }
+}
+
+function changeShape(){
+    state++;
+    if(state===1){
+        setTarget(getHeartPoints());
+    }
+    else if(state===2){
+        setTarget(getTextPoints("Làm ny a nha"));
+    }
+    else if(state===3){
+        setTarget(getTextPoints("Nha nha nha"));
+    }
+    else{
+        state=0;
+        particles.forEach(p=>{
+            p.tx = Math.random()*canvas.width;
+            p.ty = Math.random()*canvas.height;
+        });
+    }
+}
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+        p.move();
+        p.draw();
+    });
+    requestAnimationFrame(animate);
+}
+
+animate();
+window.addEventListener("click", changeShape);
+
+window.addEventListener("resize", ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 
 </body>
 </html>
